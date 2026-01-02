@@ -3,8 +3,10 @@ from src.model import evaluate_svr
 
 def differential_evolution(
     X_train, X_test, y_train, y_test,
-    pop_size=30, generations=50,
-    F=0.8, CR=0.9
+    pop_size=30,
+    generations=50,
+    F=0.8,
+    CR=0.9
 ):
     bounds = [
         (0.1, 100),     # C
@@ -30,9 +32,11 @@ def differential_evolution(
             a, b, c = population[np.random.choice(idxs, 3, replace=False)]
 
             mutant = a + F * (b - c)
-            mutant = np.clip(mutant,
-                              [b[0] for b in bounds],
-                              [b[1] for b in bounds])
+            mutant = np.clip(
+                mutant,
+                [b[0] for b in bounds],
+                [b[1] for b in bounds]
+            )
 
             crossover = np.random.rand(len(bounds)) < CR
             trial = np.where(crossover, mutant, population[i])
@@ -47,6 +51,5 @@ def differential_evolution(
 
         history.append(fitness.min())
 
-    best_idx = np.argmin(fitness)
-    return population[best_idx], fitness[best_idx], history
-
+    best_index = np.argmin(fitness)
+    return population[best_index], fitness[best_index], history
