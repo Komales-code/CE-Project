@@ -11,6 +11,7 @@ def load_and_preprocess(path):
     # Clean milage
     df['milage'] = df['milage'].str.replace(' mi.', '').str.replace(',', '').astype(float)
 
+    # Handle missing values
     df['clean_title'] = df['clean_title'].fillna('No')
     df.dropna(subset=['price'], inplace=True)
 
@@ -24,8 +25,13 @@ def load_and_preprocess(path):
         df[col] = encoder.fit_transform(df[col].astype(str))
 
     features = [
-        'model_year', 'milage', 'fuel_type',
-        'transmission', 'accident', 'clean_title', 'brand'
+        'model_year',
+        'milage',
+        'fuel_type',
+        'transmission',
+        'accident',
+        'clean_title',
+        'brand'
     ]
 
     X = df[features]
@@ -35,4 +41,3 @@ def load_and_preprocess(path):
     X = scaler.fit_transform(X)
 
     return train_test_split(X, y, test_size=0.2, random_state=42), df
-
