@@ -11,4 +11,3 @@ def evaluate_svr(params, X_train, X_test, y_train, y_test):
 
     rmse = np.sqrt(mean_squared_error(y_test, predictions))
     return rmse
-
