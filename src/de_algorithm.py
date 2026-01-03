@@ -1,17 +1,28 @@
 import numpy as np
 from src.model import evaluate_svr
 
+fitness_cache = {}
+
+def cached_fitness(params, X_train, X_test, y_train, y_test):
+    key = tuple(np.round(params, 4))
+    if key not in fitness_cache:
+        fitness_cache[key] = evaluate_svr(
+            params, X_train, X_test, y_train, y_test
+        )
+    return fitness_cache[key]
+
 def differential_evolution(
     X_train, X_test, y_train, y_test,
-    pop_size=30,
-    generations=50,
+    pop_size=15,
+    generations=20,
     F=0.8,
-    CR=0.9
+    CR=0.9,
+    progress_callback=None
 ):
     bounds = [
-        (0.1, 100),     # C
-        (0.01, 1),      # epsilon
-        (0.0001, 1)     # gamma
+        (0.1, 100),
+        (0.01, 1),
+        (0.0001, 1)
     ]
 
     population = np.array([
@@ -20,7 +31,7 @@ def differential_evolution(
     ])
 
     fitness = np.array([
-        evaluate_svr(ind, X_train, X_test, y_train, y_test)
+        cached_fitness(ind, X_train, X_test, y_train, y_test)
         for ind in population
     ])
 
@@ -38,10 +49,10 @@ def differential_evolution(
                 [b[1] for b in bounds]
             )
 
-            crossover = np.random.rand(len(bounds)) < CR
-            trial = np.where(crossover, mutant, population[i])
+            cross = np.random.rand(len(bounds)) < CR
+            trial = np.where(cross, mutant, population[i])
 
-            trial_fitness = evaluate_svr(
+            trial_fitness = cached_fitness(
                 trial, X_train, X_test, y_train, y_test
             )
 
@@ -51,5 +62,8 @@ def differential_evolution(
 
         history.append(fitness.min())
 
-    best_index = np.argmin(fitness)
-    return population[best_index], fitness[best_index], history
+        if progress_callback:
+            progress_callback(gen + 1)
+
+    best_idx = np.argmin(fitness)
+    return population[best_idx], fitness[best_idx], history
